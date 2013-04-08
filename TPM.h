@@ -425,7 +425,7 @@ namespace TPM{
 		public: 
 			// Init functions: 
 			pTPM(int, int, int, int, int, int); 
-			void initPW(), initAsymPW(); 
+			void initPW(), initAsymPW(), normPW(int, int); 
 
 			// Get functions: 
 			float ***getPW(), *getPH(), getPTau(); 
@@ -439,8 +439,9 @@ namespace TPM{
 
 			// Compute functions: 
 			void computeAvW(), computeSig2W(); 
-			void computePH(), computePTau(), pCompute(); 
-			void drawW(int **&), resetPW(), MC_updatePW(), learn_updatePW(); 
+			void computePH(), computePTau(), pCompute(bool fComputePTau); 
+			void drawW(int **&), MC_updatePW(), learn_updatePW(); 
+			void resetPW(), preferMPW(int, int); 
 
 	}; 
 
@@ -522,13 +523,52 @@ namespace TPM{
 					float sum=0; 
 					for (int k=0; k<2*getL()+1; k++){
 						pW[i][j][k] = float(rand()); 
-						sum += pW[i][j][k]; 
-					}
-					for (int k=0; k<2*getL()+1; k++){
-						pW[i][j][k] /= sum; 
 					}
 				}
 			}
+			normPW(-1,-1);
+
+			return;
+		}
+
+		void pTPM::normPW(int i=-1, int j=-1){
+			/* normPW function: 
+
+				This function normalizes the probability distribution associated with pW j of unit
+				i. If negative indexes i,j are provided, the normalization is carried out for all
+				the probability distributions. 
+
+			Inputs: 
+				>> i=-1,j=1: indexes of the pW to normalize. If they are negative, all the pW are
+				normalized.
+
+			*/ 
+
+			float sum=0.;
+			if (j<0 and i<0){
+				for (int i=0; i<getK(); i++){
+					for (int j=0; j<getN(); j++){
+						sum=0.;
+						for (int k=0; k<2*getL()+1; k++){
+							sum+= pW[i][j][k];
+						}
+						for (int k=0; k<2*getL()+1; k++){
+							pW[i][j][k] /= sum;
+						}
+					}
+				}
+			}
+			else{
+				sum=0.;
+				for (int k=0; k<2*getL()+1; k++){
+					sum+= pW[i][j][k];
+				}
+				for (int k=0; k<2*getL()+1; k++){
+					pW[i][j][k] /= sum;
+				}
+			}
+
+			return;
 		}
 
 
@@ -693,7 +733,8 @@ namespace TPM{
 		void pTPM::setNReset(int nReset_){
 			/* setNReset function: 
 
-				This function returns the number of failed samples after which a pW instance is reset. 
+				This function sets the number of failed samples after which a pW instance is
+				reset.
 
 			*/
 
@@ -786,9 +827,10 @@ namespace TPM{
 		void pTPM::computePH(){
 			/* computePH function: 
 
-				This function computes pH given the current probability distribution of the weights. 
-			To implement this computation, the distribution of the weights is approximated by a Gaussian 
-			function and the sign of the average is inverted whenever the associated input is negative. 
+				This function computes pH given the current probability distribution of the weights.
+				To implement this computation, the distribution of the weights is approximated by a
+				Gaussian function and the sign of the average is inverted whenever the associated
+				input is negative.
 
 			*/ 
 
@@ -829,15 +871,15 @@ namespace TPM{
 				pTau = (pH[0]*pH[1]) + ((1-pH[0])*(1-pH[1])); 
 			}
 			else if (getK()==3){
-				pTau = (pH[0]*pH[1]*pH[2]) + ((1-pH[0])*(1-pH[1])*pH[2]) + ((1-pH[0])*pH[1]*(1-pH[2])) + 
-						+ (pH[0]*(1-pH[1])*(1-pH[2])); 
+				pTau = (pH[0]*pH[1]*pH[2]) + ((1-pH[0])*(1-pH[1])*pH[2]) +
+						((1-pH[0])*pH[1]*(1-pH[2])) + (pH[0]*(1-pH[1])*(1-pH[2]));
 			}
 
 
 			return; 
 		}
 
-		void pTPM::pCompute(){
+		void pTPM::pCompute(bool fComputePTau=false){
 			/* pCompute function: 
 
 				This function computes the probabilistic variables. 
@@ -847,7 +889,7 @@ namespace TPM{
 			computeAvW(); 
 			computeSig2W(); 
 			computePH(); 
-			computePTau(); 
+			if (fComputePTau) computePTau(); 
 
 			return; 
 		}
@@ -856,6 +898,10 @@ namespace TPM{
 			/* drawW function: 
 
 				This function draws random weights from the current probability distribution. 
+
+			Inputs: 
+				>> rW: array where the random weights will be stored. This works as a place to 
+				store the output. 
 
 			*/ 
 
@@ -879,60 +925,23 @@ namespace TPM{
 			return; 
 		}
 
-		void pTPM::resetPW(){
-			/* resetPW function: 
-
-				This function resets the weights corresponding to the input with lower sig2W. This means 
-			that it resets those pW which have already converged more. The idea behind this is that if 
-			a reset is needed it is because a wrong collapse exists. 
-
-			*/ 
-
-			computeAvW(); 
-			computeSig2W(); 
-
-			int ind1=0, ind2=0; 
-			float minSig2=sig2W[0][0]; 
-			for (int i=0; i<getK(); i++){
-				for (int j=0; j<getN(); j++){
-					if (sig2W[i][j]<minSig2){
-						minSig2 = sig2W[i][j]; 
-						ind1=i, ind2=j; 
-					}
-				}
-			}
-
-			// for (int k=0; k<2*getL()+1; k++){
-			//	 pW[ind1][ind2][k] = 1./(2*getL()+1); 
-			// }
-			float sum=0; 
-			for (int k=0; k<2*getL()+1; k++){
-				pW[ind1][ind2][k] = float(rand()); 
-				sum += pW[ind1][ind2][k]; 
-			}
-			for (int k=0; k<2*getL()+1; k++){
-				pW[ind1][ind2][k] /= sum; 
-			}
-
-			return; 
-		}
 
 		void pTPM::MC_updatePW(){
 			/* MC_updateW function: 
 
-				This function implements a Monte-Carlo sampling of the weights space according to their 
-			current probability distributions. 
+				This function implements a Monte-Carlo sampling of the weights space according to
+				their current probability distributions.
 
 			*/ 
 
-			float ***averaged; 
+			float ***averaged; 					// In this variable it is stored the new pW! 
 			averaged = new float**[getK()]; 
 			for (int i=0; i<getK(); i++){
 				averaged[i] = new float*[getN()]; 
 				for (int j=0; j<getN(); j++){
 					averaged[i][j] = new float[2*getL()+1]; 
 					for (int k=0; k<2*getL()+1; k++){
-						averaged[i][j][k] = 0; 
+						averaged[i][j][k] = 0.; 
 					}
 				}
 			}
@@ -979,6 +988,7 @@ namespace TPM{
 					>> updateRule=3: Hebbian learning. 
 
 				The update for pW is tricky: 
+
 					>> Update is dictated by the TPM since we wish to update whenever the synchronizing 
 			machines do so! It could be implemented an update rule proportional to p(tau=targetTau), but 
 			in this case we would be acting as if the synchronizing TPMs were taking into account what 
@@ -1015,19 +1025,21 @@ namespace TPM{
 				for (int j=0; j<getN(); j++){
 					if (updateFactor*getX()[i][j]>0){
 						float temp=0; 
-						for (int k=0; k<2*getL()+1; k++){
+						for (int k=0; k<2*getL(); k++){
 							float temp_ = flux*pW[i][j][k]; 
 							pW[i][j][k] += temp - flux*pW[i][j][k]; 
 							temp = temp_; 
 						}
+						pW[i][j][2*getL()] += temp;
 					}
 					else{
 						float temp=0; 
-						for (int k=2*getL(); k>=0; k--){
+						for (int k=2*getL(); k>0; k--){
 							float temp_ = flux*pW[i][j][k]; 
 							pW[i][j][k] += temp - flux*pW[i][j][k]; 
 							temp = temp_; 
 						}
+						pW[i][j][0] += temp;
 					}
 				}
 			}
@@ -1035,6 +1047,98 @@ namespace TPM{
 			return; 
 		}
 
+		void pTPM::resetPW(){
+			/* resetPW function: 
+
+				This function resets the weights corresponding to the input with lower sig2W. This
+				means that it resets those pW which have already converged more. The idea behind
+				this is that if a reset is needed it is because a wrong collapse exists.
+
+				ACHTUNG!! Preliminary simulations show that this function destroys too many
+				information. It must be rewritten!!
+
+			*/ 
+
+			computeAvW(); 
+			computeSig2W(); 
+
+			int ind1=0, ind2=0; 
+			float minSig2=sig2W[0][0]; 
+			for (int i=0; i<getK(); i++){
+				for (int j=0; j<getN(); j++){
+					// ACHTUNG!! if (sig2W[i][j]>minSig2){
+					if (sig2W[i][j]<minSig2){
+						minSig2 = sig2W[i][j]; 
+						ind1=i, ind2=j; 
+					}
+				}
+			}
+
+			// for (int k=0; k<2*getL()+1; k++){
+			//	 pW[ind1][ind2][k] = 1./(2*getL()+1); 
+			// }
+			float sum=0; 
+			for (int k=0; k<2*getL()+1; k++){
+				pW[ind1][ind2][k] = float(rand()); 
+			}
+			normPW(ind1,ind2);
+
+			return; 
+		}
+
+		void pTPM::preferMPW(int i=-1, int j=-1){
+			/* preferMPW function: 
+
+				This function reshapes the probability distribution to approach a Gaussian bell
+				centered in the most probable weight. If i and j are lower than 0 then all pW are so
+				reshaped. Else, the transformation affects only (i,j). 
+
+			Inputs: 
+				>> i=-1,j=-1: indexes indicating which units and weights are affected by the
+				reshaping.
+
+			*/ 
+
+			float z1, z2;
+			computeAvW(); 
+			computeSig2W(); 
+			int **mPW; 
+			mPW = getMostProbW();
+
+			if (i<0 and j<0){
+				for (int i=0; i<getK(); i++){
+					for (int j=0; j<getN(); j++){
+						z1 = (-100*getL()-avW[i][j])/sqrt(sig2W[i][j]); 
+						z2 = (-getL()+0.5-avW[i][j])/sqrt(sig2W[i][j]); 
+						pW[i][j][0] = erfc(z1/sqrt(2))/2-erfc(z2/sqrt(2))/2;
+						for (int k=1; k<2*getL(); k++){
+							z1 = (k-getL()-0.5-avW[i][j])/sqrt(sig2W[i][j]); 
+							z2 = (k-getL()+0.5-avW[i][j])/sqrt(sig2W[i][j]); 
+							pW[i][j][k] = erfc(z1/sqrt(2))/2-erfc(z2/sqrt(2))/2;
+						}
+						z1 = (getL()-0.5-avW[i][j])/sqrt(sig2W[i][j]); 
+						pW[i][j][2*getL()] = 1./2 + erfc(z1/sqrt(2))/2; 
+					}
+				}
+				normPW(-1,-1);
+			}
+			else{
+				z1 = (-getL()-0.5-mPW[i][j])/sqrt(sig2W[i][j]); 
+				z2 = (-getL()+0.5-mPW[i][j])/sqrt(sig2W[i][j]); 
+				pW[i][j][0] = erfc(z1/sqrt(2))/2-erfc(z2/sqrt(2))/2;
+				for (int k=1; k<2*getL(); k++){
+					z1 = (k-getL()-0.5-mPW[i][j])/sqrt(sig2W[i][j]); 
+					z2 = (k-getL()+0.5-mPW[i][j])/sqrt(sig2W[i][j]); 
+					pW[i][j][k] = erfc(z1/sqrt(2))/2-erfc(z2/sqrt(2))/2;
+				}
+				z1 = (getL()-0.5-mPW[i][j])/sqrt(sig2W[i][j]); 
+				z2 = (getL()+0.5-mPW[i][j])/sqrt(sig2W[i][j]); 
+				pW[i][j][2*getL()] = erfc(z1/sqrt(2))/2-erfc(z2/sqrt(2))/2;
+				normPW(i,j);
+			}
+
+			return;
+		}
 
 		
 }
