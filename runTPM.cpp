@@ -1,6 +1,6 @@
 /* runTPM.cpp: 
 
-    This file contains a main function to run TPMs. 
+	This file contains a main function to run TPMs. 
 
 */ 
 
@@ -16,98 +16,104 @@
 using namespace std; 
 
 int main(int argc, char* argv[]){
-    /* main for runTPM.cpp */
+	/* main for runTPM.cpp */
 
-    int seed=0; 
-    int K_=1, N_=10, L_=5; 
-    int **x, **w, *h, tau; 
-    int updateRule_=1; 
+	int seed=0; 
+	int K_=2, N_=100, L_=50; 
+	int **x, **w, *h, tau; 
+	int updateRule_=1; 
 
-    int nSample_=10000, nReset_=100000; 
+	int nSample_=10000, nReset_=100000; 
 
-    for (int i=0; i<argc; i++){
-        if (string(argv[i])=="-uR"){
-            updateRule_ = atoi(argv[i+1]); 
-        }
-        if (string(argv[i])=="-s"){
-            seed = atoi(argv[i+1]); 
-        }
-    }
-    //     if (string(argv[i])=="-sC"){
-    //         stopCount = atoi(argv[i+1]); 
-    //     }
-    //     if (string(argv[i])=="-mC"){
-    //         maxCount = atoi(argv[i+1]); 
-    //     }
-    //     if (string(argv[i])=="-sC_"){
-    //         stepCount = atoi(argv[i+1]); 
-    //     }
-    //     if (string(argv[i])=="-tC"){
-    //         topCount = atoi(argv[i+1]); 
-    //     }
-    //     if (string(argv[i])=="-sC__"){
-    //         saveCount = atoi(argv[i+1]); 
-    //     }
-    // }
-
-
-    // Defining a TPM: 
-    // TPM::PTPM M1, M2; 
-    srand(seed); 
-    TPM::pTPM M1(nSample_, nReset_, K_, N_, L_, updateRule_); 
-    TPM::TPM M2(K_, N_, L_, updateRule_); 
-
-    x = new int*[K_]; 
-    float ***pW_; 
-    pW_ = new float**[K_]; 
-    for (int i=0; i<K_; i++){
-        x[i] = new int[N_];
-        pW_[i]  = new float*[N_]; 
-        for (int j=0; j<N_; j++){
-            pW_[i][j] = new float[2*L_+1]; 
-            x[i][j] = 1; 
-            for (int k=0; k<2*L_+1; k++){
-                pW_[i][j][k] = 1.; 
-            }
-        }
-    }
-
-    for (int i=0; i<400; i++){
-        x = h::generateX(K_, N_); 
-        M1.setX(x); 
-        M2.setX(x); 
-        M2.compute(); 
-
-        M1.setTargetTau(M2.getTau()); 
-        M1.MC_updatePW(); 
-    }
-
-    w = M2.getW(); 
-    M1.computeAvW(); 
-    float **avW; 
-    avW = M1.getAvW(); 
-
-    for (int i=0; i<M1.getK(); i++){
-        for (int j=0; j<M1.getN(); j++){
-            for (int k=0; k<2*M1.getL()+1; k++){
-                cout << M1.getPW()[i][j][k] << ":"; 
-            }
-            cout << "  "; 
-        }
-        cout << endl; 
-    }
-
-    int **mPW; 
-    mPW = M1.getMostProbW(); 
-    for (int i=0; i<K_;i++){
-        for (int j=0; j<N_; j++){
-            cout << w[i][j] << ":" << avW[i][j] << ":" << mPW[i][j] << "  "; 
-        }
-        cout << endl; 
-    }
+	for (int i=0; i<argc; i++){
+		if (string(argv[i])=="-uR"){
+			updateRule_ = atoi(argv[i+1]); 
+		}
+		if (string(argv[i])=="-s"){
+			seed = atoi(argv[i+1]); 
+		}
+	}
+	//	 if (string(argv[i])=="-sC"){
+	//		 stopCount = atoi(argv[i+1]); 
+	//	 }
+	//	 if (string(argv[i])=="-mC"){
+	//		 maxCount = atoi(argv[i+1]); 
+	//	 }
+	//	 if (string(argv[i])=="-sC_"){
+	//		 stepCount = atoi(argv[i+1]); 
+	//	 }
+	//	 if (string(argv[i])=="-tC"){
+	//		 topCount = atoi(argv[i+1]); 
+	//	 }
+	//	 if (string(argv[i])=="-sC__"){
+	//		 saveCount = atoi(argv[i+1]); 
+	//	 }
+	// }
 
 
+	// Defining a TPM: 
+	// TPM::PTPM ME, MA; 
+	srand(seed); 
+	TPM::pTPM ME(nSample_, nReset_, K_, N_, L_, updateRule_); 
+	TPM::TPM MA(K_, N_, L_, updateRule_), MB(K_, N_, L_, updateRule_); 
 
-    return 0; 
+	int **w1, **w2, **w3; 
+	float ***pW1; 
+	float rho12, rho12_, rho23; 
+
+
+	// // Just synchronize: 
+	// h::synchTPM(MA, MB); 
+
+	// // Statich attach: 
+	// for (int it=0; it<400; it++){
+	//	 x = h::generateX(K_, N_, x); 
+	//	 MA.setX(x); 
+	//	 ME.setX(x); 
+	//	 ME.setTargetTau(MA.getTau()); 
+	//	 ME.MC_updatePW(); 
+
+	//	 pW1 = ME.getPW(); 
+	//	 w2 = MA.getW(); 
+	//	 rho12 = h::computeOverlapFull(K_, N_, L_, w2, pW1); 
+	//	 cout << it << "  " << rho12 << endl; 
+	// }
+
+	// Full dynamic attack: 
+	int t=0; 
+	rho23 = 0;  
+	rho12_ = 0; 
+	while ((rho23<1 and rho23>-1) and (rho12_<1 and rho12_>-1)){
+		t++; 
+		x = h::generateX(K_, N_, x); 
+		MA.setX(x); 
+		MB.setX(x); 
+		ME.setX(x); 
+		ME.setTargetTau(MA.getTau()); 
+		ME.MC_updatePW(); 
+		if (MA.getTau()==MB.getTau()){
+			ME.learn_updatePW(); 
+			MA.updateW(); 
+			MB.updateW(); 
+		}
+
+		pW1 = ME.getPW(); 
+		w1 = ME.getMostProbW(); 
+		w2 = MA.getW(); 
+		w3 = MB.getW(); 
+		rho23 = h::computeOverlapFull(K_, N_, L_, w2, w3); 
+		rho12 = h::computeOverlapFull(K_, N_, L_, w2, pW1); 
+		rho12_ = h::computeOverlapFull(K_, N_, L_, w2, w1); 
+		cout << t << "  " << rho23 << "  " << rho12 << "  " << rho12_ << endl; 
+		if (t==100){
+			pW1 = ME.getPW(); 
+			for (int k=0; k<(2*ME.getL()+1); k++){
+				cout << k-ME.getL() << "  " << pW1[0][0][k] << endl; 
+			}
+			return 0; 
+		}
+	}
+
+	return 0; 
 
 }
