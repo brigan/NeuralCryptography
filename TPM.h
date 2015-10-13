@@ -1,6 +1,53 @@
+/*
+
+	Copyright (C) 2013, 2014, 2015 Luis F Seoane. 
+
+		Contact: luis.seoane@upf.edu, brigan@gmail.com
+
+
+	This file is part of NeuralCryptography.
+
+    NeuralCryptography is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    NeuralCryptography is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with NeuralCryptography.  If not, see <http://www.gnu.org/licenses/>.
+
+*/ 
+
+
 /* TPM.h: 
 
-	In this file it is implemented the class of TPM objects. 
+	In this file it is implemented the class of TPM objects. TPM stands for Tree Parity Machines,
+	which is currently (2015) the most widely used means for Neural Cryptography. As of today, it
+	has not been reported any successful attack on TPM-based cryptography.
+
+	In this file it is also implemented a class P_TPM whose name stands for probabilistic Tree
+	Parity Machine. This class aims at an attack on Tree Parity Machines based on a probabilistic
+	inference of its weights. This line of attack is inspired by [1], where a probabilistic attack
+	is implemented that breaks the Permutation Parity Machine (PPM)-based cryptography. The class
+	P_TPM allows us to implement similar attacks on TPMs. Some such attacks have been tried and the
+	results are promising, but they indicate that more research is necessary to finish breaking the
+	TPM-based cryptography. 
+
+	If you plan to do research on breaking the TPM or any newer machines, please contact me, I might
+	be interested! Please, contact me and cite this software if you use it to implement your
+	research on Neural Cryptography. (Thanks beforehand!)
+
+	Code with a python implementation of TPMs and PPMs is also available upon request, but it has
+	not been liberated because it is old and would require a review. Also, python is notably slower
+	than c++... Notably, among the software available upon request is that used to implement the
+	attacks in [1].
+
+    [1] Seoane LF and Ruttor A, Successful attack on permutation-parity-machine-based neural
+cryptography. Physical Review E, 85(2), 025101 (2012).
 
 */ 
 
@@ -416,15 +463,15 @@ namespace TPM{
 
 	///////////////////////////////
 	// 
-	//  PTPM Class: 
+	//  P_TPM Class: 
 
-	class pTPM: public TPM{
+	class P_TPM: public TPM{
 			int nSample, nReset, targetTau; 
 			float ***pW, *pH, pTau; 
 			float **avW, **sig2W; 
 		public: 
 			// Init functions: 
-			pTPM(int, int, int, int, int, int); 
+			P_TPM(int, int, int, int, int, int); 
 			void initPW(), initAsymPW(), normPW(int, int); 
 
 			// Get functions: 
@@ -448,14 +495,14 @@ namespace TPM{
 
 	///////////////////////////////
 	// 
-	//  pTPM Functions: 
+	//  P_TPM Functions: 
 		
 		///////////////////////////////
 		// 
 		//  Init Functions: 
 
-		pTPM::pTPM(int nSample_, int nReset_, int K_, int N_, int L_, int updateRule_):TPM(K_, N_, L_, updateRule_){
-			/* Constructor function for class pTPM: 
+		P_TPM::P_TPM(int nSample_, int nReset_, int K_, int N_, int L_, int updateRule_):TPM(K_, N_, L_, updateRule_){
+			/* Constructor function for class P_TPM: 
 
 				This constructor should implement a few things more (allocating and init pW) apart
 				from calling super's constructor.
@@ -479,7 +526,7 @@ namespace TPM{
 			return; 
 		}
 
-		void pTPM::initPW(){
+		void P_TPM::initPW(){
 			/* initPW function: 
 
 				This function initializes the probabilistic weights of the machine. 
@@ -503,7 +550,7 @@ namespace TPM{
 			return; 
 		}
 
-		void pTPM::initAsymPW(){
+		void P_TPM::initAsymPW(){
 			/* initAsymmPW function: 
 
 				This function initializes the pWeights such that an asymmetry is present since the 
@@ -531,7 +578,7 @@ namespace TPM{
 			return;
 		}
 
-		void pTPM::normPW(int i=-1, int j=-1){
+		void P_TPM::normPW(int i=-1, int j=-1){
 			/* normPW function: 
 
 				This function normalizes the probability distribution associated with pW j of unit
@@ -576,10 +623,10 @@ namespace TPM{
 		// 
 		//  Get Functions: 
 
-		float ***pTPM::getPW(){
+		float ***P_TPM::getPW(){
 			/* getPW function: 
 
-				This function returns the probability that the PTPMhas got each of the possible weights. 
+				This function returns the probability that the P_TPM has got each of the possible weights. 
 
 			Returns: 
 				>> pW: probability that the machine has got each of the possible weights. 
@@ -589,7 +636,7 @@ namespace TPM{
 			return pW; 
 		}
 
-		float *pTPM::getPH(){
+		float *P_TPM::getPH(){
 			/* getPH function: 
 
 				This function returns the probability that each of the hidden units is activated (+). 
@@ -605,20 +652,20 @@ namespace TPM{
 			return pH; 
 		}
 
-		float pTPM::getPTau(){
+		float P_TPM::getPTau(){
 			/* getPTau function: 
 
-				This function returns the probability that the whole PTPM is activated. 
+				This function returns the probability that the whole P_TPM is activated. 
 
 			Returns: 
-				>> pTau: probability that the whole PTPM is activated. 
+				>> pTau: probability that the whole P_TPM is activated. 
 
 			*/ 
 
 			return pTau; 
 		}
 
-		float **pTPM::getAvW(){
+		float **P_TPM::getAvW(){
 			/* getAvW function: 
 
 				This function returns the average weights given the current pW. 
@@ -631,7 +678,7 @@ namespace TPM{
 			return avW; 
 		}
 
-		float **pTPM::getSig2W(){
+		float **P_TPM::getSig2W(){
 			/* getSig2W function: 
 
 				This function returns the squared average of deviations from the mean of the weights. 
@@ -644,7 +691,7 @@ namespace TPM{
 			return sig2W; 
 		}
 
-		int pTPM::getNSample(){
+		int P_TPM::getNSample(){
 			/* getNSample function: 
 
 				This function returns the number of MC samples. 
@@ -657,7 +704,7 @@ namespace TPM{
 			return nSample; 
 		}
 
-		int pTPM::getNReset(){
+		int P_TPM::getNReset(){
 			/* getNReset function: 
 
 				This function returns the number of failed samples after which weights are reset. 
@@ -670,7 +717,7 @@ namespace TPM{
 			return nReset; 
 		}
 
-		int pTPM::getTargetTau(){
+		int P_TPM::getTargetTau(){
 			/* getTargetTau function: 
 
 				This function returns the target output. 
@@ -683,7 +730,7 @@ namespace TPM{
 			return targetTau; 
 		}
 
-		int **pTPM::getMostProbW(){
+		int **P_TPM::getMostProbW(){
 			/* getMostProbW function: 
 
 				This function returns the most probable weight. 
@@ -718,7 +765,7 @@ namespace TPM{
 		// 
 		//  Set Functions: 
 
-		void pTPM::setNSample(int nSample_){
+		void P_TPM::setNSample(int nSample_){
 			/* setNSample function: 
 
 				This function sets up the number of MC samples. 
@@ -730,7 +777,7 @@ namespace TPM{
 			return; 
 		}
 
-		void pTPM::setNReset(int nReset_){
+		void P_TPM::setNReset(int nReset_){
 			/* setNReset function: 
 
 				This function sets the number of failed samples after which a pW instance is
@@ -743,7 +790,7 @@ namespace TPM{
 			return; 
 		}
 
-		void pTPM::setTargetTau(int targetTau_){
+		void P_TPM::setTargetTau(int targetTau_){
 			/* setTargetTau function: 
 
 				This function sets a target Tau. 
@@ -758,7 +805,7 @@ namespace TPM{
 			return; 
 		}
 
-		void pTPM::setPW(float ***&pW_){
+		void P_TPM::setPW(float ***&pW_){
 			/* setPW function: 
 
 				This function sets a new probability distribution of the weights. 
@@ -786,7 +833,7 @@ namespace TPM{
 		// 
 		//  Compute Functions: 
 
-		void pTPM::computeAvW(){
+		void P_TPM::computeAvW(){
 			/* computeAvW function: 
 
 				This function computes the average weights. 
@@ -805,7 +852,7 @@ namespace TPM{
 			return; 
 		}
 
-		void pTPM::computeSig2W(){
+		void P_TPM::computeSig2W(){
 			/* computesig2W function: 
 
 				This function computes the squared average deviation of the weights. 
@@ -824,7 +871,7 @@ namespace TPM{
 			return; 
 		}
 
-		void pTPM::computePH(){
+		void P_TPM::computePH(){
 			/* computePH function: 
 
 				This function computes pH given the current probability distribution of the weights.
@@ -853,7 +900,7 @@ namespace TPM{
 			return; 
 		}
 
-		void pTPM::computePTau(){
+		void P_TPM::computePTau(){
 			/* computePTau function: 
 
 				This function computes the probability that tau=1 with the current settings. Because 
@@ -879,7 +926,7 @@ namespace TPM{
 			return; 
 		}
 
-		void pTPM::pCompute(bool fComputePTau=false){
+		void P_TPM::pCompute(bool fComputePTau=false){
 			/* pCompute function: 
 
 				This function computes the probabilistic variables. 
@@ -894,7 +941,7 @@ namespace TPM{
 			return; 
 		}
 
-		void pTPM::drawW(int **&rW){
+		void P_TPM::drawW(int **&rW){
 			/* drawW function: 
 
 				This function draws random weights from the current probability distribution. 
@@ -926,7 +973,7 @@ namespace TPM{
 		}
 
 
-		void pTPM::MC_updatePW(){
+		void P_TPM::MC_updatePW(){
 			/* MC_updateW function: 
 
 				This function implements a Monte-Carlo sampling of the weights space according to
@@ -978,10 +1025,10 @@ namespace TPM{
 			return; 
 		}
 
-		void pTPM::learn_updatePW(){
+		void P_TPM::learn_updatePW(){
 			/* learn_updatePW function: 
 
-				This function updates the pWeights of the pTPM. The rule to update the weights is stored 
+				This function updates the pWeights of the P_TPM. The rule to update the weights is stored 
 			as an integer in updateRule: 
 					>> updateRule=1: Hebbian learning. 
 					>> updateRule=2: Hebbian learning. 
@@ -992,11 +1039,11 @@ namespace TPM{
 					>> Update is dictated by the TPM since we wish to update whenever the synchronizing 
 			machines do so! It could be implemented an update rule proportional to p(tau=targetTau), but 
 			in this case we would be acting as if the synchronizing TPMs were taking into account what 
-			the pTPM says, which is not the case. 
+			the P_TPM says, which is not the case. 
 					>> The product: updateFactor*x[i][j] determines the direction of the update. The 
 			pWeights are shifted accordingly. 
 					>> pH[i] is taken into account indeed. Unlike with p(tau=targetTau), in which both 
-			TPM update notwithstanding what pTPM says; the weights of a unit which doesn't match the 
+			TPM update notwithstanding what P_TPM says; the weights of a unit which doesn't match the 
 			output is not updated, even for the TPMs. We can not guess which units are updated in each. 
 			The best we can do is approximate this by the probability that each unit is active. This 
 			defines the flux transferred. 
@@ -1047,7 +1094,7 @@ namespace TPM{
 			return; 
 		}
 
-		void pTPM::resetPW(){
+		void P_TPM::resetPW(){
 			/* resetPW function: 
 
 				This function resets the weights corresponding to the input with lower sig2W. This
@@ -1086,7 +1133,7 @@ namespace TPM{
 			return; 
 		}
 
-		void pTPM::preferMPW(int i=-1, int j=-1){
+		void P_TPM::preferMPW(int i=-1, int j=-1){
 			/* preferMPW function: 
 
 				This function reshapes the probability distribution to approach a Gaussian bell

@@ -1,3 +1,29 @@
+/*
+
+	Copyright (C) 2013, 2014, 2015 Luis F Seoane. 
+
+		Contact: luis.seoane@upf.edu, brigan@gmail.com
+
+
+	This file is part of NeuralCryptography.
+
+    NeuralCryptography is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    NeuralCryptography is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with NeuralCryptography.  If not, see <http://www.gnu.org/licenses/>.
+
+*/ 
+
+
+
 /* runTPM.cpp: 
 
 	This file contains a main function to run TPMs. 
@@ -52,9 +78,9 @@ int main(int argc, char* argv[]){
 
 
 	// Defining a TPM: 
-	// TPM::PTPM ME, MA; 
+	// TPM::P_TPM ME, MA; 
 	srand(seed); 
-	TPM::pTPM ME(nSample_, nReset_, K_, N_, L_, updateRule_); 
+	TPM::P_TPM ME(nSample_, nReset_, K_, N_, L_, updateRule_); 
 	TPM::TPM MA(K_, N_, L_, updateRule_), MB(K_, N_, L_, updateRule_); 
 
 	int **w1, **w2, **w3; 
