@@ -1,6 +1,6 @@
 /*
 
-	Copyright (C) 2013, 2014, 2015 Luis F Seoane. 
+	Copyright (C) 2012, 2013, 2015 Luis F Seoane. 
 
 		Contact: luis.seoane@upf.edu, brigan@gmail.com
 

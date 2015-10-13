@@ -1,6 +1,6 @@
 /*
 
-	Copyright (C) 2013, 2014, 2015 Luis F Seoane. 
+	Copyright (C) 2012, 2013, 2015 Luis F Seoane. 
 
 		Contact: luis.seoane@upf.edu, brigan@gmail.com
 
@@ -77,9 +77,9 @@ int main(int argc, char* argv[]){
 
 
 	// Defining a TPM: 
-	// TPM::PTPM ME, MA; 
+	// TPM::P_TPM ME, MA; 
 	srand(seed); 
-	TPM::pTPM ME(nSample_, nReset_, K_, N_, L_, updateRule_); 
+	TPM::P_TPM ME(nSample_, nReset_, K_, N_, L_, updateRule_); 
 	TPM::TPM MA(K_, N_, L_, updateRule_), MB(K_, N_, L_, updateRule_); 
 
 	int **w1, **w2, **w3; 
