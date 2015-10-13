@@ -396,7 +396,7 @@ namespace h{
 	float ***extendW(int K_, int N_, int L_, int **w){
 		/* extendW function: 
 
-			This function extends a weights isntance into a pW one. 
+			This function extends a weights instance into a pW one. 
 
 		Inputs: 
 			>> w: weights. 
