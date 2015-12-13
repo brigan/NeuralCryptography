@@ -406,7 +406,7 @@ namespace h{
 			M2.setX(x); 
 			if (M1.getTau()==M2.getTau()){
 				M1.updateW(); 
-				M2.updateW(); 
+				M2.updateW();
 			}
 
 			w1 = M1.getW(); 
