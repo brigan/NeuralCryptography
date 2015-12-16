@@ -1,4 +1,5 @@
 #include "geneticAttackInfrastructure.h"
+#include <iterator>
 
 namespace TPM2 {
     GA::GA(int TPMCount_, int K_, int N_, int L_, int updateRule_, int M_) {
@@ -100,7 +101,7 @@ namespace TPM2 {
         } else {
             setXForTPMs(getX());
             // compute
-            compute();
+            //compute();
             // cut off TPMs with tau not equal to input parameters.
             deleteUnsuccessfulTPMs(tau);
             // then update weights of remaining TPMs
@@ -111,25 +112,28 @@ namespace TPM2 {
     void GA::addTPMs(int tau) {
         list<TPM::TPM> newTpms;
 
-        int *pIn = new int[2]{-1, 1};
+        int *pIn = new int[2] {1, -1};
+        int pInSize = 2;
+        int pOutSize = K;
 
         list<TPM::TPM>::iterator i = tpms.begin();
         while (i != tpms.end()) {
 
             int count = 0;
 
-            int *pOut = new int[K + 1]; // строка из K символов плюс 1 символ для терминального 0
-            pOut[K] = 0;                  // помещаем 0 в конец строки
-            int *stack = new int[(K-1) * 2],  // стек псевдорекурсии, глубина рекурсии K - 1
+            int* pOut = new int[pOutSize + 1]; // строка из K символов плюс 1 символ для терминального 0
+            pOut[pOutSize] = 0;                  // помещаем 0 в конец строки
+            int *stack = new int[(pOutSize-1) * 2],  // стек псевдорекурсии, глубина рекурсии K - 1
                     *pTop = stack,            // вершина стека
                     k = 0,                    // переменные цикла
                     n = 0,
                     j = 0;
-            for (; ;)                      // цикл псевдорекурсии
+            for (;;)                      // цикл псевдорекурсии
             {
-                while (n < N) {
+                while(n < pInSize)
+                {
                     pOut[k] = pIn[n++];
-                    if (k == K-1) {
+                    if (k == (pOutSize-1)) {
                         // have to find only 4 variants
                         if (count > 3) {
                             pTop = stack;
@@ -147,12 +151,28 @@ namespace TPM2 {
                             newTPM.setX(getX());
 
                             // override results
-                            newTPM.setPrecomputedResults(i->getW(), pOut, tau);
+                            // TODO: move to helper.h
+                            int **newW = new int *[K];
+                            for (int z = 0; z < K; z++) {
+                                newW[z] = new int [N];
+                                for (int jz = 0; jz < N; jz++) {
+                                    newW[z][jz] = i->getW()[z][jz];
+                                }
+                            }
+
+                            // TODO: move to helper.h
+                            int* newH = new int[pOutSize + 1];
+                            for (int z = 0; z < pOutSize + 1; z++) {
+                                newH[z] = pOut[z];
+                            }
+                            newTPM.setPrecomputedResults(newW, newH, tau);
                             newTpms.push_back(newTPM);
                             count++;
                         }
-                    } else {
-                        if (n < N) {
+                    } else
+                    {
+                        if (n < pInSize)
+                        {
                             *pTop++ = k;          // сохраняем k и n в стеке
                             *pTop++ = n;
                         }
@@ -175,6 +195,7 @@ namespace TPM2 {
         i = newTpms.begin();
         while (i != newTpms.end()) {
             tpms.push_back(*i);
+            newTpms.erase(i++);
         }
     }
 

@@ -1,5 +1,5 @@
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
-add_executable(runGeneticAttackTests genetic_attack_check.cpp)
+add_executable(runGeneticAttackTests genetic_attack_check.cpp ./../../TPM.cpp)
 
 target_link_libraries(runGeneticAttackTests gtest gtest_main)

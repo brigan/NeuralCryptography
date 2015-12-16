@@ -28,3 +28,11 @@ TEST(basic_check, test_list_deletion) {
     EXPECT_EQ(4, list1.size());
 }
 
+TEST(rand_check, std_rand) {
+    srand(time(NULL));
+    cout << rand() << endl;
+    cout << rand() << endl;
+    cout << rand() << endl;
+
+    EXPECT_EQ(1, 1);
+}

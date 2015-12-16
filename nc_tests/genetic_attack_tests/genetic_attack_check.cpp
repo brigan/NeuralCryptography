@@ -12,22 +12,21 @@
 // N - размер входного массива
 // K - количество элементов в размещении
 
-void PermutationWithRepetition(const int* pIn, int N, int K)
+void PermutationWithRepetition(const int* pIn, int pInSize, int pOutSize)
 {
-    int* pOut = new int[K + 1]; // строка из K символов плюс 1 символ для терминального 0
-    pOut[K] = 0;                  // помещаем 0 в конец строки
-    K--;
-    int *stack = new int[K * 2],  // стек псевдорекурсии, глубина рекурсии K - 1
+    int* pOut = new int[pOutSize + 1]; // строка из K символов плюс 1 символ для терминального 0
+    pOut[pOutSize] = 0;                  // помещаем 0 в конец строки
+    int *stack = new int[(pOutSize-1) * 2],  // стек псевдорекурсии, глубина рекурсии K - 1
             *pTop = stack,            // вершина стека
             k = 0,                    // переменные цикла
             n = 0,
             j = 0;
     for (;;)                      // цикл псевдорекурсии
     {
-        while(n < N)
+        while(n < pInSize)
         {
             pOut[k] = pIn[n++];
-            if (k == K) {
+            if (k == (pOutSize-1)) {
                 printf("%02d. ", ++j);
                 for (int i = 0; i < k+1; i++) {
                     printf("%2d ", pOut[i]);
@@ -35,7 +34,7 @@ void PermutationWithRepetition(const int* pIn, int N, int K)
                 printf("\n");
             } else
             {
-                if (n < N)
+                if (n < pInSize)
                 {
                     *pTop++ = k;          // сохраняем k и n в стеке
                     *pTop++ = n;

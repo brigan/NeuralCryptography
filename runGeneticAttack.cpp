@@ -15,22 +15,22 @@ int main(int argc, char* argv[]) {
     /* main for runGeneticAttack.cpp */
 
     int seed=0;
-    int K_=4, N_=100, L_=50;
+    int K_=3, N_=101, L_=3;
     int **x, **w, *h, tau;
     int updateRule_=1;
     int TPMCount_ = 100;
-    int M_ = 100;
+    int M_ = 2500;
 
     int nSample_=10000, nReset_=100000;
 
-    for (int i=0; i<argc; i++){
-        if (string(argv[i])=="-uR"){
-            updateRule_ = atoi(argv[i+1]);
-        }
-        if (string(argv[i])=="-s"){
-            seed = atoi(argv[i+1]);
-        }
-    }
+//    for (int i=0; i<argc; i++){
+//        if (string(argv[i])=="-uR"){
+//            updateRule_ = atoi(argv[i+1]);
+//        }
+//        if (string(argv[i])=="-s"){
+//            seed = atoi(argv[i+1]);
+//        }
+//    }
     //	 if (string(argv[i])=="-sC"){
     //		 stopCount = atoi(argv[i+1]);
     //	 }
@@ -48,6 +48,8 @@ int main(int argc, char* argv[]) {
     //	 }
     // }
 
+    // set random seed
+    seed = time(NULL);
 
     // Defining a TPM:
     // TPM::P_TPM ME, MA;
@@ -94,13 +96,18 @@ int main(int argc, char* argv[]) {
 
         w1 = M1.getW();
         w2 = M2.getW();
+
+
         rho = h::computeOverlapFull(K_, N_, L_, w1, w2);
-        cout << t << "  " << rho << endl;
-
         ga_max_rho = h::computeOverlapFull(K_, N_, L_, w1, GA.getTPMs());
-        cout << t << "  " << ga_max_rho << "<-- GA"<< endl;
+//        if (t % 1000 == 0) {
+            cout << t << "  " << rho << endl;
+            cout << t << "  " << ga_max_rho << "<-- GA"<< endl;
+//        }
     }
-
+    cout << " --------------- " << endl;
+    cout << t << "  " << rho << endl;
+    cout << t << "  " << ga_max_rho << "<-- GA"<< endl;
     return 0;
 
 }

@@ -297,8 +297,16 @@ namespace TPM {
             h[i] = 0;
             for (int j = 0; j < N; j++) {
                 h[i] += x[i][j] * w[i][j];
+
             }
-            if (h[i] == 0) h[i] = -1;    // Avoids having tau=0!!
+            if (h[i]>0) {
+                h[i] = 1;
+            } else if (h[i] < 0) {
+                h[i] = -1;
+            } else
+            if (h[i] == 0) {
+                h[i] = -1;    // Avoids having tau=0!!
+            }
         }
 
         return;
