@@ -88,8 +88,8 @@ int main(int argc, char* argv[]){
 	float rho12, rho12_, rho23; 
 
 
-	// // Just synchronize: 
-	// h::synchTPM(MA, MB); 
+	 // Just synchronize:
+	 h::synchTPM(MA, MB);
 
 	// // Statich attach: 
 	// for (int it=0; it<400; it++){
@@ -105,40 +105,40 @@ int main(int argc, char* argv[]){
 	//	 cout << it << "  " << rho12 << endl; 
 	// }
 
-	// Full dynamic attack: 
-	int t=0; 
-	rho23 = 0;  
-	rho12_ = 0; 
-	while ((rho23<1 and rho23>-1) and (rho12_<1 and rho12_>-1)){
-		t++; 
-		x = h::generateX(K_, N_, x); 
-		MA.setX(x); 
-		MB.setX(x); 
-		ME.setX(x); 
-		ME.setTargetTau(MA.getTau()); 
-		ME.MC_updatePW(); 
-		if (MA.getTau()==MB.getTau()){
-			ME.learn_updatePW(); 
-			MA.updateW(); 
-			MB.updateW(); 
-		}
-
-		pW1 = ME.getPW(); 
-		w1 = ME.getMostProbW(); 
-		w2 = MA.getW(); 
-		w3 = MB.getW(); 
-		rho23 = h::computeOverlapFull(K_, N_, L_, w2, w3); 
-		rho12 = h::computeOverlapFull(K_, N_, L_, w2, pW1); 
-		rho12_ = h::computeOverlapFull(K_, N_, L_, w2, w1); 
-		cout << t << "  " << rho23 << "  " << rho12 << "  " << rho12_ << endl; 
-		if (t==100){
-			pW1 = ME.getPW(); 
-			for (int k=0; k<(2*ME.getL()+1); k++){
-				cout << k-ME.getL() << "  " << pW1[0][0][k] << endl; 
-			}
-			return 0; 
-		}
-	}
+//	// Full dynamic attack:
+//	int t=0;
+//	rho23 = 0;
+//	rho12_ = 0;
+//	while ((rho23<1 and rho23>-1) and (rho12_<1 and rho12_>-1)){
+//		t++;
+//		x = h::generateX(K_, N_, x);
+//		MA.setX(x);
+//		MB.setX(x);
+//		ME.setX(x);
+//		ME.setTargetTau(MA.getTau());
+//		ME.MC_updatePW();
+//		if (MA.getTau()==MB.getTau()){
+//			ME.learn_updatePW();
+//			MA.updateW();
+//			MB.updateW();
+//		}
+//
+//		pW1 = ME.getPW();
+//		w1 = ME.getMostProbW();
+//		w2 = MA.getW();
+//		w3 = MB.getW();
+//		rho23 = h::computeOverlapFull(K_, N_, L_, w2, w3);
+//		rho12 = h::computeOverlapFull(K_, N_, L_, w2, pW1);
+//		rho12_ = h::computeOverlapFull(K_, N_, L_, w2, w1);
+//		cout << t << "  " << rho23 << "  " << rho12 << "  " << rho12_ << endl;
+//		if (t==100){
+//			pW1 = ME.getPW();
+//			for (int k=0; k<(2*ME.getL()+1); k++){
+//				cout << k-ME.getL() << "  " << pW1[0][0][k] << endl;
+//			}
+//			return 0;
+//		}
+//	}
 
 	return 0; 
 

@@ -29,7 +29,9 @@
 
 */ 
 
+#ifndef _helper_h_
 #define _helper_h_
+
 
 // Imports: 
 #include <iostream> 
@@ -39,8 +41,10 @@
 #include <math.h>
 #include <cstdlib> 
 #include <vector>
+#include <list>
 #include "TPM.h"
-using namespace std; 
+
+using namespace std;
 
 
 namespace h{
@@ -318,7 +322,26 @@ namespace h{
 		return rho; 
 	}
 
-	float computeOverlapFull(int K, int N, int L, int **&w1, float ***&pW2){
+
+    float computeOverlapFull(int K, int N, int L, int **&w1, list<TPM::TPM> *tpms) {
+
+        float max_rho = -1;
+
+        list<TPM::TPM>::iterator it = tpms->begin();
+        while (it != tpms->end()) {
+            int **w2;
+            w2 = it->getW();
+            float temp = computeOverlapFull(K, N, L, (int **&)w1, (int **&)w2);
+            if (temp > max_rho) {
+                max_rho = temp;
+            }
+            it++;
+        }
+
+        return max_rho;
+    }
+
+    float computeOverlapFull(int K, int N, int L, int **&w1, float ***&pW2){
 		/* computeOverlap function: 
 
 			This function is a mixed solution between the previous and the following ones. 
@@ -406,7 +429,7 @@ namespace h{
 			M2.setX(x); 
 			if (M1.getTau()==M2.getTau()){
 				M1.updateW(); 
-				M2.updateW(); 
+				M2.updateW();
 			}
 
 			w1 = M1.getW(); 
@@ -449,4 +472,4 @@ namespace h{
 	}
 }
 
-
+#endif
